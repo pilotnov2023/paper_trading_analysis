@@ -1,0 +1,1 @@
+git clone https://pilotnov2023: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@github.com/pilotnov2023/paper_trading_analysis.git
