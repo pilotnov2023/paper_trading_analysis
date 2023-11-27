@@ -1,5 +1,8 @@
-git clone https://pilotnov2023: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@github.com/pilotnov2023/paper_trading_analysis.git
+paper_trading_analysis_token : 
+    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
 
 
-Classic : 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
-git remote set-url origin https://pilotnov2023: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@github.com/pilotnov2023/paper_trading_analysis.git
+git clone https://pilotnov2023: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@github.com/pilotnov2023/paper_trading_analysis.git
+
+
+git remote set-url origin https://pilotnov2023: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@github.com/pilotnov2023/paper_trading_analysis.git
