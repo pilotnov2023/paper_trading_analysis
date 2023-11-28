@@ -6,3 +6,8 @@ git clone https://pilotnov2023:github_pat_11BEDMNSI0OuTifNlSxTOx_FTyQRNKrEJ3vNg2
 
 
 git remote set-url origin https://pilotnov2023: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@github.com/pilotnov2023/paper_trading_analysis.git
+
+
+Resolve Git Not Initialized :
+
+git config --global --add safe.directory "d:\My Files [ Don't Delete These Files ]\projects\paper_trading_analysis"
