@@ -1,4 +1,5 @@
 import pandas as pd
+from tabulate import tabulate
 
 EXCHANGE_FEE_PERCENT = 0.08
 
@@ -120,3 +121,24 @@ overall_risk_reward_ratio = -total_potential_profit / total_potential_loss
 
 # Display the overall risk/reward ratio
 print(f"12) Overall Risk/Reward Ratio: {overall_risk_reward_ratio:.2f}")
+
+# Display results in tabular format
+results_table = [
+    ["0) Number Of Trades", total_positions],
+    ["1) Trading Success Rate", f"{success_rate:.2%}"],
+    ["2) Total Profit and Loss", f"{total_profit_loss:.2f}"],
+    ["3) Average Profit", f"{average_profit:.2f}"],
+    ["4) Average Loss", f"{average_loss:.2f}"],
+    ["5) Biggest Profit", f"{biggest_profit:.2f}"],
+    ["6) Biggest Loss", f"{biggest_loss:.2f}"],
+    ["7) Total Profits", f"{total_profits:.2f}"],
+    ["8) Total Losses", f"{total_losses:.2f}"],
+    ["9) Total Profit and Loss by Long Transactions", f"{total_profit_long:.2f}", f"{total_profit_short:.2f}"],
+    ["10) Profit for Long Positions", f"{profit_for_long:.2f}"],
+    ["11) Loss for Long Positions", f"{loss_for_long:.2f}"],
+    ["12) Profit for Short Positions", f"{profit_for_short:.2f}"],
+    ["13) Loss for Short Positions", f"{loss_for_short:.2f}"],
+    ["14) Overall Risk/Reward Ratio", f"{overall_risk_reward_ratio:.2f}"]
+]
+
+print(tabulate(results_table, headers=["Metric", "Value"], tablefmt="fancy_grid"))
