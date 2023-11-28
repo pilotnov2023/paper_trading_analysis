@@ -1,7 +1,11 @@
 import pandas as pd
+<<<<<<< HEAD
+
+=======
 from tabulate import tabulate
 
 EXCHANGE_FEE_PERCENT = 0.08
+>>>>>>> 71645c871ffc91203e13b4857bd1b563eae7ed9b
 
 # Replace 'your_file.csv' with the actual path to your CSV file
 file_path = 'positions.csv'

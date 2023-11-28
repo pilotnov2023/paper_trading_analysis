@@ -2,14 +2,13 @@ import pandas as pd
 from tabulate import tabulate
 
 EXCHANGE_FEE_PERCENT = 0.08
-TAKE_PROFIT_PERCENT = 0.11
-STOP_LOSS_PERCENT = -0.04
+TAKE_PROFIT_PERCENT = 0.04
+STOP_LOSS_PERCENT = -1.5
 
-# Replace 'positions.csv' with the actual path to your CSV file
 file_path = 'positions.csv'
 
 # Load the CSV file into a DataFrame
-original_df = pd.read_csv(file_path)
+df = pd.read_csv(file_path)
 
 def calculate_long_close_price(position_open_price, long_profit):
     # Calculate close_price for a long position given long_profit and subtract exchange fee
@@ -39,22 +38,12 @@ def calculate_lowest_highest(position):
     return lowest_price, highest_price
 
 # Apply the function to each row of the DataFrame and assign the results to new columns
-original_df[['lowest_price', 'highest_price']] = original_df.apply(calculate_lowest_highest, axis=1, result_type='expand')
+df[['lowest_price', 'highest_price']] = df.apply(calculate_lowest_highest, axis=1, result_type='expand')
 
-# Create a copy of the DataFrame with reversed directions
-df_reverse = original_df.copy()
-df_reverse['rev_direction'] = original_df['direction'].apply(lambda x: 'long' if x == 'short' else 'short')
-
-# Specify columns to be deleted
-columns_to_delete = ['trailing_step', 'trailing_stop_price']
-
-# Delete specified columns from the copy DataFrame
-df_reverse = df_reverse.drop(columns=columns_to_delete)
-
-# Function to calculate rev_net_profit based on conditions
-def calculate_rev_net_profit(row):
+# Function to recalculate net_profit based on TAKE_PROFIT_PERCENT and STOP_LOSS_PERCENT
+def calculate_net_profit_by_tp_sl(row):
     position_open_price = row['position_open_price']
-    direction = row['rev_direction']
+    direction = row['direction']
     
     if direction == 'long':
         close_price_take_profit = row['highest_price']
@@ -91,70 +80,102 @@ def calculate_rev_net_profit(row):
             return STOP_LOSS_PERCENT # profit_stop_loss
         else:
             return None
+        
+def calculate_net_profit_by_tp_sl_conservatively(row):
+    position_open_price = row['position_open_price']
+    direction = row['direction']
+    
+    if direction == 'long':
+        close_price_take_profit = row['highest_price']
+        close_price_stop_loss = row['lowest_price']
+        
+        profit_take_profit = round(
+            ((close_price_take_profit - position_open_price) / position_open_price) * 100 - EXCHANGE_FEE_PERCENT, 2
+        )
+        profit_stop_loss = round(
+            ((close_price_stop_loss - position_open_price) / position_open_price) * 100 - EXCHANGE_FEE_PERCENT, 2
+        )
+        
+        if profit_stop_loss <= STOP_LOSS_PERCENT:
+            return STOP_LOSS_PERCENT # profit_stop_loss
+        elif profit_take_profit >= TAKE_PROFIT_PERCENT:
+            return TAKE_PROFIT_PERCENT # profit_take_profit
+        else:
+            return None
+        
+    elif direction == 'short':
+        close_price_take_profit = row['lowest_price']
+        close_price_stop_loss = row['highest_price']
+        
+        profit_take_profit = round(
+            ((position_open_price - close_price_take_profit) / position_open_price) * 100 - EXCHANGE_FEE_PERCENT, 2
+        )
+        profit_stop_loss = round(
+            ((position_open_price - close_price_stop_loss) / position_open_price) * 100 - EXCHANGE_FEE_PERCENT, 2
+        )
+        
+        if profit_stop_loss <= STOP_LOSS_PERCENT:
+            return STOP_LOSS_PERCENT # profit_stop_loss
+        elif profit_take_profit >= TAKE_PROFIT_PERCENT:
+            return TAKE_PROFIT_PERCENT # profit_take_profit
+        else:
+            return None
 
 # Apply the function to each row of the DataFrame and assign the results to the new column
 # Apply the function to each row of the DataFrame and assign the results to the new column
-df_reverse['rev_net_profit'] = df_reverse.apply(calculate_rev_net_profit, axis=1)
-
-# Save the reversed DataFrame to a new CSV file
-reverse_file_path = 'reverse_positions.csv'
-df_reverse.to_csv(reverse_file_path, index=False)
-
-print(f"Reversed DataFrame saved to {reverse_file_path}")
-
-df = df_reverse.copy()
+df['net_profit'] = df.apply(calculate_net_profit_by_tp_sl_conservatively, axis=1)
 
 # 0) Calculate the count of all positions
 total_positions = df.shape[0]
 
 # 1) Trading success rate
-success_rate = (df['rev_net_profit'] > 0).mean()
+success_rate = (df['net_profit'] > 0).mean()
 
 # 2) Total profit and loss
-total_profit_loss = df['rev_net_profit'].sum()
+total_profit_loss = df['net_profit'].sum()
 
 # 3) Average profit
-average_profit = df[df['rev_net_profit'] > 0]['rev_net_profit'].mean()
+average_profit = df[df['net_profit'] > 0]['net_profit'].mean()
 
 # 4) Average loss
-average_loss = df[df['rev_net_profit'] < 0]['rev_net_profit'].mean()
+average_loss = df[df['net_profit'] < 0]['net_profit'].mean()
 
 # 5) The biggest profit
-biggest_profit = df['rev_net_profit'].max()
+biggest_profit = df['net_profit'].max()
 
 # 6) The biggest loss
-biggest_loss = df['rev_net_profit'].min()
+biggest_loss = df['net_profit'].min()
 
 # 7) Total profits
-total_profits = df[df['rev_net_profit'] > 0]['rev_net_profit'].sum()
+total_profits = df[df['net_profit'] > 0]['net_profit'].sum()
 
 # 8) Total losses
-total_losses = df[df['rev_net_profit'] < 0]['rev_net_profit'].sum()
+total_losses = df[df['net_profit'] < 0]['net_profit'].sum()
 
 # 9) Total profit and loss by long, short transaction type
-total_profit_long = df[df['rev_direction'] == 'long']['rev_net_profit'].sum()
-total_profit_short = df[df['rev_direction'] == 'short']['rev_net_profit'].sum()
+total_profit_long = df[df['direction'] == 'long']['net_profit'].sum()
+total_profit_short = df[df['direction'] == 'short']['net_profit'].sum()
 
 # 10) Profit for long
-profit_for_long = df[(df['rev_direction'] == 'long') & (
-    df['rev_net_profit'] > 0)]['rev_net_profit'].sum()
+profit_for_long = df[(df['direction'] == 'long') & (
+    df['net_profit'] > 0)]['net_profit'].sum()
 
 # 11) Loss for long
-loss_for_long = df[(df['rev_direction'] == 'long') & (
-    df['rev_net_profit'] < 0)]['rev_net_profit'].sum()
+loss_for_long = df[(df['direction'] == 'long') & (
+    df['net_profit'] < 0)]['net_profit'].sum()
 
 # 12) Profit for short
-profit_for_short = df[(df['rev_direction'] == 'short') & (
-    df['rev_net_profit'] > 0)]['rev_net_profit'].sum()
+profit_for_short = df[(df['direction'] == 'short') & (
+    df['net_profit'] > 0)]['net_profit'].sum()
 
 # 13) Loss for short
-loss_for_short = df[(df['rev_direction'] == 'short') & (
-    df['rev_net_profit'] < 0)]['rev_net_profit'].sum()
+loss_for_short = df[(df['direction'] == 'short') & (
+    df['net_profit'] < 0)]['net_profit'].sum()
 
 # Calculate the potential profit and potential loss for each trade
 # Calculate potential profit and potential loss
-df['potential_profit'] = df['rev_net_profit'].apply(lambda x: max(x, 0))
-df['potential_loss'] = df['rev_net_profit'].apply(lambda x: min(x, 0))
+df['potential_profit'] = df['net_profit'].apply(lambda x: max(x, 0))
+df['potential_loss'] = df['net_profit'].apply(lambda x: min(x, 0))
 
 # Calculate the total potential profit and total potential loss
 total_potential_profit = df['potential_profit'].sum()
@@ -183,4 +204,7 @@ results_table = [
 ]
 
 print(tabulate(results_table, headers=["Row","Metric", "Value"], tablefmt="pretty", colalign=("center", "center")))
+count_none_values = df['net_profit'].isna().sum()
+print(f"Count of None values: {count_none_values}")
 
+# print(df.head(20))
