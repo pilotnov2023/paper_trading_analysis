@@ -12,6 +12,7 @@ df = pd.read_csv(file_path)
 df['open_time'] = pd.to_datetime(df['open_time'])
 df['close_time'] = pd.to_datetime(df['close_time'])
 
+
 # 0) Calculate the count of all positions
 total_positions = df.shape[0]
 print(f"0) Number Of Trades: {total_positions}")
