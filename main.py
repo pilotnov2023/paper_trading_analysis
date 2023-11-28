@@ -7,7 +7,6 @@ file_path = 'positions.csv'
 # Load the CSV file into a DataFrame
 df = pd.read_csv(file_path)
 
-
 # Convert 'open_time' and 'close_time' to datetime objects
 df['open_time'] = pd.to_datetime(df['open_time'])
 df['close_time'] = pd.to_datetime(df['close_time'])
