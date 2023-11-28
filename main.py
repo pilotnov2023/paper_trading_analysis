@@ -41,7 +41,7 @@ def calculate_lowest_highest(position):
 df[['lowest_price', 'highest_price']] = df.apply(calculate_lowest_highest, axis=1, result_type='expand')
 
 # Print the first 10 rows of the DataFrame
-print(df.head(10))
+# print(df.head(10))
 
 # Convert 'open_time' and 'close_time' to datetime objects
 df['open_time'] = pd.to_datetime(df['open_time'])
