@@ -2,8 +2,8 @@ import pandas as pd
 from tabulate import tabulate
 
 EXCHANGE_FEE_PERCENT = 0.08
-TAKE_PROFIT_PERCENT = 0.20
-STOP_LOSS_PERCENT = -0.30
+TAKE_PROFIT_PERCENT = 0.1
+STOP_LOSS_PERCENT = -2.0
 
 # Replace 'positions.csv' with the actual path to your CSV file
 file_path = 'positions.csv'
