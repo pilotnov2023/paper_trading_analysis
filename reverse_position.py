@@ -2,8 +2,8 @@ import pandas as pd
 from tabulate import tabulate
 
 EXCHANGE_FEE_PERCENT = 0.08
-TAKE_PROFIT_PERCENT = 0.1
-STOP_LOSS_PERCENT = -2.0
+TAKE_PROFIT_PERCENT = 0.04
+STOP_LOSS_PERCENT = -0.02
 
 # Replace 'positions.csv' with the actual path to your CSV file
 file_path = 'positions.csv'
@@ -70,7 +70,7 @@ def calculate_rev_net_profit(row):
         if profit_take_profit >= TAKE_PROFIT_PERCENT:
             return TAKE_PROFIT_PERCENT # profit_take_profit
         elif profit_stop_loss <= STOP_LOSS_PERCENT:
-            return profit_stop_loss
+            return STOP_LOSS_PERCENT # profit_stop_loss
         else:
             return None
         
@@ -88,7 +88,7 @@ def calculate_rev_net_profit(row):
         if profit_take_profit >= TAKE_PROFIT_PERCENT:
             return TAKE_PROFIT_PERCENT # profit_take_profit
         elif profit_stop_loss <= STOP_LOSS_PERCENT:
-            return profit_stop_loss
+            return STOP_LOSS_PERCENT # profit_stop_loss
         else:
             return None
 
