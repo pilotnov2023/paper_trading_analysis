@@ -11,3 +11,15 @@ git remote set-url origin https://pilotnov2023:github_pat_11BEDMNSI0OuTifNlSxTOx
 Resolve Git Not Initialized :
 
 git config --global --add safe.directory "d:\My Files [ Don't Delete These Files ]\projects\paper_trading_analysis"
+
+
+----------------------------------------------------------
+
+second_paper_trading_analysis_token : 
+    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
+
+
+git clone https://pilotnov2023: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@github.com/pilotnov2023/paper_trading_analysis.git
+
+
+git remote set-url origin https://pilotnov2023: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@github.com/pilotnov2023/paper_trading_analysis.git
