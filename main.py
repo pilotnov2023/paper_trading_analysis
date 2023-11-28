@@ -1,11 +1,47 @@
 import pandas as pd
-import numpy as np
+
+EXCHANGE_FEE_PERCENT = 0.08
 
 # Replace 'your_file.csv' with the actual path to your CSV file
 file_path = 'positions.csv'
 
 # Load the CSV file into a DataFrame
 df = pd.read_csv(file_path)
+
+
+
+def calculate_long_close_price(position_open_price, long_profit):
+    # Calculate close_price for a long position given long_profit and subtract exchange fee
+    close_price = position_open_price * (1 + (long_profit + EXCHANGE_FEE_PERCENT) / 100)
+    return close_price
+
+
+def calculate_short_close_price(position_open_price, short_profit):
+    # Calculate close_price for a short position given short_profit and subtract exchange fee
+    close_price = position_open_price * (1 - (short_profit + EXCHANGE_FEE_PERCENT) / 100)
+    return close_price
+
+# Function to calculate lowest and highest prices based on runup and drawdown
+def calculate_lowest_highest(position):
+    position_open_price = float(position["position_open_price"])
+    direction = position["direction"]
+    current_position_runup = position["runup"]
+    current_position_drawdown = position["drawdown"]
+
+    if direction == "long":
+        lowest_price = calculate_long_close_price(position_open_price , current_position_drawdown)
+        highest_price = calculate_long_close_price(position_open_price , current_position_runup)
+    else:  # Assuming short position
+        lowest_price = calculate_short_close_price(position_open_price , current_position_runup)
+        highest_price = calculate_short_close_price(position_open_price , current_position_drawdown)
+
+    return lowest_price, highest_price
+
+# Apply the function to each row of the DataFrame and assign the results to new columns
+df[['lowest_price', 'highest_price']] = df.apply(calculate_lowest_highest, axis=1, result_type='expand')
+
+# Print the first 10 rows of the DataFrame
+print(df.head(10))
 
 # Convert 'open_time' and 'close_time' to datetime objects
 df['open_time'] = pd.to_datetime(df['open_time'])
